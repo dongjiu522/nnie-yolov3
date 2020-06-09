@@ -1,4 +1,4 @@
-**nnie-yolov3**
+<font size=5>**nnie-yolov3**</font>
 
 **platform:** 
 
@@ -6,7 +6,7 @@
 
 <2>  HISI3516CV500(Makefile)
 
-**Inspiration: **
+**Inspiration:**
 
 海思的文档以及ruyistudio的环境，调试、开发很是不方便, 因此简单重新组织了下NNIE的代码，把yolov3从中抽取了出来，方便调试，并提供了vs工程，cuda加速 
 
