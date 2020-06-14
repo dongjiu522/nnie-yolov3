@@ -36,3 +36,4 @@ make生成sample_yolov3_hisi3516CV500.bin, 需要注意的是
 
 <2> **链接的时候最好链接静态库，不要链接动态库**
 
+**Have fun with code:)**
