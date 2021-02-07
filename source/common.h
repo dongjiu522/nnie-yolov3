@@ -13,7 +13,7 @@ namespace nnie
 
 	FILE_NAME_PAIR getFullPathFileNameFromFullPath(std::string fileFullPath);
 
-	uint64_t  getTimeMs();
+	float  getTimeMs();
 
 
 

@@ -1,6 +1,7 @@
+#include <cmath>
 #include"SvpNnieYolov3.h"
 #include"SvpNnieFun.h"
-
+#include"common.h"
 /* YOLO V3 */
 #define SVP_SAMPLE_YOLOV3_SRC_WIDTH                (416)
 #define SVP_SAMPLE_YOLOV3_SRC_HEIGHT               (416)
@@ -10,15 +11,11 @@
 #define SVP_SAMPLE_YOLOV3_RESULT_BLOB_NUM          (3)
 #define SVP_SAMPLE_YOLOV3_BOXNUM                   (3)
 
-#if 1
+
 #define SVP_SAMPLE_YOLOV3_CHANNLENUM               (255)
 #define SVP_SAMPLE_YOLOV3_PARAMNUM                 (85)
 #define SVP_SAMPLE_YOLOV3_CLASSNUM                 (80)
-#else
-#define SVP_SAMPLE_YOLOV3_CHANNLENUM               (27)
-#define SVP_SAMPLE_YOLOV3_PARAMNUM                 (9)
-#define SVP_SAMPLE_YOLOV3_CLASSNUM                 (4)
-#endif
+
 #define SVP_SAMPLE_YOLOV3_MAX_BOX_NUM              (10)
 #define SVP_SAMPLE_YOLOV3_NMS_THREASH              (0.45f)
 
@@ -156,7 +153,7 @@ namespace nnie
 		HI_FLOAT* pf32BoxTmp = (HI_FLOAT*)(pf32InputData + inputdate_size);////tep_box_size
 		SVP_SAMPLE_BOX_S* pstBox = (SVP_SAMPLE_BOX_S*)(pf32BoxTmp + u32TmpBoxSize);////assit_box_size
 #ifdef DEBUG
-		SAMPLE_PRINT("[INFO][DEBUG]n:%u, c:%u, h:%u, w:%u\n",pstDstBlob->u32Num,pstDstBlob->unShape.stWhc.u32Chn,pstDstBlob->unShape.stWhc.u32Height,pstDstBlob->unShape.stWhc.u32Width);
+		//SAMPLE_PRINT("[INFO][DEBUG]n:%u, c:%u, h:%u, w:%u\n",pstDstBlob->u32Num,pstDstBlob->unShape.stWhc.u32Chn,pstDstBlob->unShape.stWhc.u32Height,pstDstBlob->unShape.stWhc.u32Width);
 #endif
 
 		if ((u32GridNum != pstDstBlob->unShape.stWhc.u32Height) ||
@@ -448,7 +445,9 @@ namespace nnie
 
 	HI_S32 NetYoloV3::detect(const HI_U8 * bgr, HI_U32 n, HI_U32 c, HI_U32 h, HI_U32 w, HI_U32 stride, HI_FLOAT threshold,std::vector<TargetBox> &boxs)
 	{
-
+#ifdef DEBUG
+		float timeStart = getTimeMs();
+#endif
 		HI_S32 ret = NetOneSeg::setBlob(bgr, n, c, h, w, stride, &NetOneSeg::srcBlobs[0].second);
 		SAMPLE_CHECK_RETURN(HI_SUCCESS != ret, ret, "[ERROR]set Blob[%s] failed\n", NetOneSeg::srcBlobs[0].first.c_str());
 
@@ -458,6 +457,13 @@ namespace nnie
 		
 		ret = SvpNnieYoloV3GetResult(&(NetOneSeg::NNIEOneSegNetParam), (HI_S32*)data, threshold, boxs);
 		SAMPLE_CHECK_RETURN(HI_SUCCESS != ret, ret, "[ERROR]YoloV3GetResult failed\n");
+
+#ifdef DEBUG
+		float timeEnd = getTimeMs();
+		SAMPLE_PRINT("[INFO] == DETECT TIME SPEND  : %f ms== \n", timeEnd - timeStart);
+		SAMPLE_PRINT("[INFO] %s-%d-done\n", __FUNCTION__, __LINE__);
+#endif
+
 	}
 
 

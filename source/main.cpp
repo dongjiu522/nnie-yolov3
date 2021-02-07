@@ -1,8 +1,9 @@
-#define FUNC
-//#define INST
+
 
 #ifdef _MSC_VER
 #include<Windows.h>
+#define FUNC
+//#define INST
 #if DEBUG
 #ifdef FUNC
 #pragma comment(lib, "nniefc1.2d.lib")
@@ -34,7 +35,7 @@ int main()
 	std::cout << "########################################" << std::endl;
 	std::string net = "yolov3";
 	std::cout << net << ": began" << std::endl;
-	std::cout << "[INFO]wkPath: " << wkPath << std::endl;
+	std::cout << "[INFO] wkPath: " << wkPath << std::endl;
 	nnie::NetYoloV3 yolov3((const char*)wkPath.c_str());
 	cv::Mat src = cv::imread(imagePath);
 	if (src.empty())

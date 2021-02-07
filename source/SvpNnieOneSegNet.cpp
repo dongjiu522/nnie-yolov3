@@ -31,7 +31,7 @@ namespace nnie
 		WkLen = ftell(fp);
 		SAMPLE_CHECK_GOTO(0 != WkLen % 16, CLOSE_FILE, ("[ERROR]" + fileName + "WK Len %% 16 != 0 \n").c_str());
 
-		SAMPLE_PRINT("Runtime WK Len: %d\n", WkLen);
+		SAMPLE_PRINT("[INFO] WK Len: %d\n", WkLen);
 
 		SAMPLE_CHECK_GOTO(0 != fseek(fp, 0L, SEEK_SET), CLOSE_FILE, "[ERROR]fseek fail");
 
@@ -76,7 +76,7 @@ namespace nnie
 			batchSize = MAX_BATCH_SIZE;
 		}
 #ifdef DEBUG
-		uint64_t timeStart = getTimeMs();
+		float timeStart = getTimeMs();
 #endif 
 
 		/******************** step1, load wk file, *******************************/
@@ -181,10 +181,9 @@ namespace nnie
 			NNIEOneSegNetParam.dstBlobs[i] = dstBlobs[i].second;
 		}
 #ifdef DEBUG
-		uint64_t timeEnd;
-		timeEnd  = getTimeMs();
-		SAMPLE_PRINT("[INFO] == LOAD MODEL TIME : %ld ms== \n", timeEnd - timeStart);
-		SAMPLE_PRINT("%s-%d-done:%s\n", __FUNCTION__, __LINE__, wkfile);
+		float timeEnd = getTimeMs();
+		SAMPLE_PRINT("[INFO] == LOAD MODEL TIME : %f ms== \n", timeEnd - timeStart);
+		SAMPLE_PRINT("[INFO] %s-%d-done:%s\n", __FUNCTION__, __LINE__, wkfile);
 #endif
 		return HI_SUCCESS;
 
@@ -311,7 +310,7 @@ namespace nnie
 		HI_BOOL bInstant = HI_TRUE;
 		HI_BOOL bFinish = HI_FALSE;
 #ifdef DEBUG
-		uint64_t timeStart = getTimeMs();
+		float timeStart = getTimeMs();
 #endif
 		/************************** step8, set ctrl param **************************/
 		NNIEOneSegNetParam.nnieCtrl.enNnieId = NNIEDevId;
@@ -329,9 +328,8 @@ namespace nnie
 
 
 #ifdef DEBUG
-		uint64_t timeEnd;
-		timeEnd = getTimeMs();
-		SAMPLE_PRINT("[INFO] == FORWORD TIME SPEND : %ld ms== \n", timeEnd - timeStart);
+		float timeEnd = getTimeMs();
+		SAMPLE_PRINT("[INFO] == FORWORD TIME SPEND : %f ms== \n", timeEnd - timeStart);
 		SAMPLE_PRINT("[INFO] %s-%d-done\n", __FUNCTION__, __LINE__);
 #endif
 

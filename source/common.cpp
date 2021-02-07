@@ -60,7 +60,7 @@ namespace nnie
 
 
 
-	uint64_t  getTimeMs()
+	float  getTimeMs()
 	{
 #ifdef _MSC_VER
 		LARGE_INTEGER time, freq;
@@ -70,7 +70,7 @@ namespace nnie
 		uint64_t usec = (time.QuadPart % freq.QuadPart) * 1000000 / freq.QuadPart;
 		return sec * 1000 + usec / 1000;
 #else
-		unsigned int curTime;
+		float curTime;
 		struct timespec tmpTime;
 		clock_gettime(CLOCK_MONOTONIC, &tmpTime);
 		curTime = tmpTime.tv_sec * 1000 + tmpTime.tv_nsec / (1000 * 1000);

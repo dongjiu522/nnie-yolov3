@@ -24,7 +24,6 @@ namespace nnie
 		{
 			s32Ret = HI_MPI_SYS_MmzAlloc(&mem->u64PhyAddr, (HI_VOID**)&(mem->u64VirAddr), NULL, HI_NULL, mem->u32Size);
 		}
-		SAMPLE_CHECK_EQ(HI_SUCCESS, s32Ret);
 #else
 		mem->u64VirAddr = (HI_U64)((HI_UL)malloc(mem->u32Size));
 		mem->u64PhyAddr = mem->u64VirAddr;
@@ -34,7 +33,7 @@ namespace nnie
 		}
 #endif
 
-		SAMPLE_CHECK_RETURN(HI_SUCCESS != s32Ret, HI_FAILURE, "[ERROR]alloc is failed\n");
+		SAMPLE_CHECK_RETURN(HI_SUCCESS != s32Ret, HI_FAILURE, "[ERROR]SAMPLE_SVP_AllocMem is failed\n");
 		return s32Ret;
 	}
 	HI_S32 SAMPLE_SVP_FlushCache(SVP_MEM_INFO_S *pstMemInfo)
@@ -46,7 +45,7 @@ namespace nnie
 
 #ifdef ON_BOARD
 		s32Ret = HI_MPI_SYS_MmzFlushCache(pstMemInfo->u64PhyAddr, (HI_VOID*)((HI_UL)pstMemInfo->u64VirAddr), pstMemInfo->u32Size);
-		SAMPLE_CHECK_EQ(HI_SUCCESS, s32Ret);
+		SAMPLE_CHECK_RETURN(HI_SUCCESS != s32Ret, HI_FAILURE, "[ERROR]HI_MPI_SYS_MmzFlushCache is failed\n");
 #endif
 		return s32Ret;
 
@@ -60,7 +59,7 @@ namespace nnie
 
 #ifdef ON_BOARD
 		s32Ret = HI_MPI_SYS_MmzFree(pstMemInfo->u64PhyAddr, (HI_VOID*)((HI_UL)pstMemInfo->u64VirAddr));
-		SAMPLE_CHECK_EQ(HI_SUCCESS, s32Ret);
+		SAMPLE_CHECK_RETURN(HI_SUCCESS != s32Ret, HI_FAILURE, "[ERROR]HI_MPI_SYS_MmzFree is failed\n");
 #else
 		free((HI_U8*)((HI_UL)pstMemInfo->u64VirAddr));
 		pstMemInfo->u64PhyAddr = 0;

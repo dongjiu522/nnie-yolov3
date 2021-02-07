@@ -1,3 +1,4 @@
+PWD := $(shell pwd)
 PLARFORM:=HI3516CV500
 
 CXX = arm-himix200-linux-g++
@@ -5,8 +6,8 @@ CC  = arm-himix200-linux-gcc
 alg=yoloV3
 TARGET:=sample_${alg}_$(PLARFORM).bin
 
-CCFLAGS  = -g -Wall -O0  -DDEBUG
-CXXFLAGS = -g -Wall -O0  -fpermissive -DDEBUG
+CCFLAGS  = -g -Wall -O0  				-DDEBUG -DON_BOARD  
+CXXFLAGS = -g -Wall -O0  -fpermissive 	-DDEBUG -DON_BOARD
 
 LDFLAG = -g -Wl,-z,relro,-z,noexecstack,--disable-new-dtags,-rpath,/lib/:/usr/lib/:/usr/app/lib
 EXTERN_LIBS := -lopencv_world
@@ -18,7 +19,7 @@ LDFLAG += -fstack-protector --param ssp-buffer-size=4 -Wfloat-equal -Wshadow -Wf
 
 #OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
 
-SRCDIR 	 := ./source
+SRCDIR 	 := $(PWD)/source
 SRCS_C   = $(wildcard $(SRCDIR)/*.c)
 SRCS_CXX = $(wildcard $(SRCDIR)/*.cpp)
 
@@ -28,13 +29,13 @@ OBJS = $(SRC_OBJS_C) $(SRC_OBJS_CXX)
 
 
 
-HISI_SDK_DIR:=/home/until/work/HISI/Hi3516CV500_SDK_V2.0.0.3/
+HISI_SDK_DIR:=/home/ubuntu/work/hisi/Hi3516CV500R001C02SPC003/Hi3516CV500R001C02SPC003/01.software/board/Hi3516CV500_SDK_V2.0.0.3/Hi3516CV500_SDK_V2.0.0.3
 HISI_SDK_MPP_DIR:=$(HISI_SDK_DIR)/smp/a7_linux/mpp
 HISI_SDK_LINUX_big_little_DIR:=$(HISI_SDK_MPP_DIR)/out/linux/big-little
 HISI_SDK_LINUX_multi_core_DIR:=$(HISI_SDK_MPP_DIR)/out/linux/multi-core
 HISI_SDK_liteos_DIR:=$(HISI_SDK_MPP_DIR)/out/liteos
 
-LINKE_DIR := ./opencv/hisi3516CV500
+LINKE_DIR := $(PWD)/opencv/hisi3516CV500
 HISI_DIR :=$(HISI_SDK_MPP_DIR)
 #HISI_DIR := $(LINKE_DIR)/hisi
 EXTERN_DIR := $(LINKE_DIR)
