@@ -36,7 +36,8 @@ namespace nnie
 		NetOneSeg(const char * wkfile, HI_U32 maxBatch);
 		~NetOneSeg();
 	public:
-		HI_S32  setBlob(const HI_U8 * bgr, HI_U32 n, HI_U32 c, HI_U32 h, HI_U32 w, HI_U32 stride, SVP_BLOB_S * srcBlob);
+		//data is bgr or yuv420sp
+		HI_S32  setBlob(const HI_U8 * data, HI_U32 n, HI_U32 c, HI_U32 h, HI_U32 w, HI_U32 stride, SVP_BLOB_S * srcBlob);
 		HI_S32  forword();
 
 	private:

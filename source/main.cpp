@@ -66,9 +66,11 @@ int main()
 	float h = 416;
 	cv::Mat src_copyMakeBorder_resize;
 	cv::resize(src_copyMakeBorder, src_copyMakeBorder_resize, cv::Size(w, h));
-
+	//cv::cvtColor(src_copyMakeBorder_resize, src_copyMakeBorder_resize, cv::COLOR_BGR2YUV_YV12);
 	float width_crop = src_copyMakeBorder_resize.cols;
 	float height_crop = src_copyMakeBorder_resize.rows;
+	//float width_crop = 416;
+	//float height_crop = 416;
 	cv::Mat image;
 
 
@@ -76,7 +78,7 @@ int main()
 	float mScaleH = height_crop / h;
 	float threshold = 0.5;
 	std::vector<nnie::TargetBox>ObjBoxs;
-	yolov3.detect(src_copyMakeBorder_resize.data, 1, 3, height_crop, width_crop, width_crop * 3, threshold,ObjBoxs);
+	yolov3.detect(src_copyMakeBorder_resize.data, 1, 3, height_crop, width_crop, width_crop*3, threshold,ObjBoxs);
 	float fFontSize = 0.5f;
 	cv::Scalar fontColor(0, 0, 255);
 	cv::Scalar lineColor(255, 0, 0);

@@ -6,6 +6,9 @@
 #include <linux/limits.h>
 #include <unistd.h>
 #endif
+#ifdef USE_OPENCV
+#include"opencv2/opencv.hpp"
+#endif
 #include"SvpNnieOneSegNet.h"
 #include"SvpNnieCommon.h"
 #include"common.h"
@@ -55,7 +58,15 @@ namespace nnie
 
 	NetOneSeg::NetOneSeg(const char * wkfile, HI_U32 maxBatch)
 	{
+#ifdef DEBUG
+		float timeStart = getTimeMs();
+#endif
 		this->init(wkfile,maxBatch);
+#ifdef DEBUG
+		float timeEnd = getTimeMs();
+		SAMPLE_PRINT("[INFO] == LOAD MODEL TIME : %f ms== \n", timeEnd - timeStart);
+		SAMPLE_PRINT("[INFO] %s-%d-done:%s\n", __FUNCTION__, __LINE__, wkfile);
+#endif
 	}
 	NetOneSeg::~NetOneSeg()
 	{
@@ -75,9 +86,7 @@ namespace nnie
 		{
 			batchSize = MAX_BATCH_SIZE;
 		}
-#ifdef DEBUG
-		float timeStart = getTimeMs();
-#endif 
+
 
 		/******************** step1, load wk file, *******************************/
 		HI_S32 s32Ret = HI_SUCCESS;
@@ -180,11 +189,7 @@ namespace nnie
 		{
 			NNIEOneSegNetParam.dstBlobs[i] = dstBlobs[i].second;
 		}
-#ifdef DEBUG
-		float timeEnd = getTimeMs();
-		SAMPLE_PRINT("[INFO] == LOAD MODEL TIME : %f ms== \n", timeEnd - timeStart);
-		SAMPLE_PRINT("[INFO] %s-%d-done:%s\n", __FUNCTION__, __LINE__, wkfile);
-#endif
+
 		return HI_SUCCESS;
 
 	FAIL_3:
@@ -234,7 +239,7 @@ namespace nnie
 		return s32Ret;
 	}
 
-	HI_S32  NetOneSeg::setBlob(const HI_U8 * bgr, HI_U32 n, HI_U32 chn, HI_U32 height, HI_U32 width, HI_U32 stride, SVP_BLOB_S * srcBlob)
+	HI_S32  NetOneSeg::setBlob(const HI_U8 * data, HI_U32 n, HI_U32 chn, HI_U32 height, HI_U32 width, HI_U32 stride, SVP_BLOB_S * srcBlob)
 	{
 		SVP_BLOB_S * pstBlob = srcBlob;
 		HI_U32 u16Index = 0;
@@ -247,71 +252,106 @@ namespace nnie
 #ifdef DEBUG
 		HI_U8* pu8DstAddrDebug = (HI_U8*)(pstBlob->u64VirAddr + u16Index * u32BlobChn * u32BlobHeight * pstBlob->u32Stride);
 #endif
-		if (width != u32BlobWidth || height != u32BlobHeight || chn != u32BlobChn )
-		{
-			SAMPLE_PRINT("[ERROR]bgr's shape !=  blob's shape\n");
-			return HI_FAILURE;
-		}
-
-
 		HI_U32 blob_OneElementSize = SAMPLE_SVP_BlobGetElementSize(pstBlob);
-
-		HI_U8* pu8SrcAddr = (HI_U8*)(bgr);
-
-		if (blob_OneElementSize != sizeof(HI_U8) || blob_type != SVP_BLOB_TYPE_U8)
+		switch (blob_type)
 		{
-			SAMPLE_PRINT("[ERROR]blob_OneElementSize is not uint8_t\n");
+		case SVP_BLOB_TYPE_U8:
+			if (width != u32BlobWidth || height != u32BlobHeight || chn != u32BlobChn)
+			{
+				SAMPLE_PRINT("[ERROR]bgr's shape !=  blob's shape\n");
+				return HI_FAILURE;
+			}
+			break;
+		case SVP_BLOB_TYPE_YVU420SP:
+			if (width != u32BlobWidth || height != u32BlobHeight || chn != 1)
+			{
+				SAMPLE_PRINT("[ERROR]yvu420sp's shape !=  blob's shape\n");
+				return HI_FAILURE;
+			}
+			break;
+
+		case SVP_BLOB_TYPE_YVU422SP :
+			if (width != u32BlobWidth || height != u32BlobHeight || chn != 1)
+			{
+				SAMPLE_PRINT("[ERROR]yvu422sp's shape !=  blob's shape\n");
+				return HI_FAILURE;
+			}
+			break;
+		default:
+			SAMPLE_PRINT("[ERROR] SVP_BLOB_S's type is not SVP_BLOB_TYPE_U8|SVP_BLOB_TYPE_YVU420SP|SVP_BLOB_TYPE_YVU422SP\n");
 			return HI_FAILURE;
 		}
-
-
-		//blob   bbbgggrrr
-		for (HI_U32 c = 0; c < u32BlobChn; c++)
+		
+		if (blob_OneElementSize != sizeof(HI_U8))
 		{
+			SAMPLE_PRINT("[ERROR]blob_OneElementSize is not HI_U8\n");
+			return HI_FAILURE;
+		}
+		
 
-			for (HI_U32 h = 0; h < u32BlobHeight; h++)
+		HI_U8* pu8SrcAddr = (HI_U8*)(data);
+
+
+
+		if (SVP_BLOB_TYPE_U8 == blob_type)
+		{
+			//blob   bbbgggrrr
+			for (HI_U32 c = 0; c < u32BlobChn; c++)
 			{
-				HI_U32 index = 0;
-				HI_U8 * line_bgr = pu8SrcAddr + h * stride;   //此处需要跟mpp的image的stride概念相同，需要注意，如不同，需要修改
-				if (h >= (HI_U32)height)
+
+				for (HI_U32 h = 0; h < u32BlobHeight; h++)
 				{
-					for (HI_U32 w = 0; w < u32BlobWidth; w++)
+					HI_U32 index = 0;
+					HI_U8 * line_bgr = pu8SrcAddr + h * stride;   //此处需要跟mpp的image的stride概念相同，需要注意，如不同，需要修改
+					if (h >= (HI_U32)height)
 					{
-						pu8DstAddr[index++] = 0;
-					}
-				}
-				else
-				{
-					for (HI_U32 w = 0; w < u32BlobWidth; w++)
-					{
-						HI_U8 * point_bgr = line_bgr + w * chn;
-						if (w >= (HI_U32)width)
+						for (HI_U32 w = 0; w < u32BlobWidth; w++)
 						{
 							pu8DstAddr[index++] = 0;
 						}
-						else
+					}
+					else
+					{
+						for (HI_U32 w = 0; w < u32BlobWidth; w++)
 						{
-							pu8DstAddr[index++] = point_bgr[c];
+							HI_U8 * point_bgr = line_bgr + w * chn;
+							if (w >= (HI_U32)width)
+							{
+								pu8DstAddr[index++] = 0;
+							}
+							else
+							{
+								pu8DstAddr[index++] = point_bgr[c];
+							}
 						}
 					}
+					pu8DstAddr += pstBlob->u32Stride;
 				}
-				pu8DstAddr += pstBlob->u32Stride;
 			}
 		}
+		else if (SVP_BLOB_TYPE_YVU420SP == blob_type)
+		{
+			memcpy(pu8DstAddr, pu8SrcAddr, u32BlobWidth*u32BlobHeight * sizeof(HI_U8) * 3 / 2);
+		}
+		else if (SVP_BLOB_TYPE_YVU422SP == blob_type)
+		{
+			memcpy(pu8DstAddr, pu8SrcAddr, u32BlobWidth*u32BlobHeight * sizeof(HI_U8) *2);
+		}
+
+
 #ifdef USE_OPENCV
 		cv::Mat debug(u32BlobHeight, u32BlobWidth, CV_8UC3, pu8DstAddrDebug);
 #endif
 		return HI_SUCCESS;
 	}
 
+	
 	HI_S32  NetOneSeg::forword()
 	{
 		HI_S32 s32Ret;
 		HI_BOOL bInstant = HI_TRUE;
 		HI_BOOL bFinish = HI_FALSE;
-#ifdef DEBUG
-		float timeStart = getTimeMs();
-#endif
+
 		/************************** step8, set ctrl param **************************/
 		NNIEOneSegNetParam.nnieCtrl.enNnieId = NNIEDevId;
 
@@ -327,11 +367,7 @@ namespace nnie
 		
 
 
-#ifdef DEBUG
-		float timeEnd = getTimeMs();
-		SAMPLE_PRINT("[INFO] == FORWORD TIME SPEND : %f ms== \n", timeEnd - timeStart);
-		SAMPLE_PRINT("[INFO] %s-%d-done\n", __FUNCTION__, __LINE__);
-#endif
+
 
 		return HI_SUCCESS;
 	}

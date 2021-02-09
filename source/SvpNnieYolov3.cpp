@@ -424,6 +424,7 @@ namespace nnie
 	NetYoloV3::NetYoloV3(const char * wkfile, HI_U32 maxBatch)
 		:NetOneSeg(wkfile, maxBatch)
 	{
+		
 		this->init();
 	}
 	NetYoloV3::~NetYoloV3()
@@ -446,23 +447,42 @@ namespace nnie
 	HI_S32 NetYoloV3::detect(const HI_U8 * bgr, HI_U32 n, HI_U32 c, HI_U32 h, HI_U32 w, HI_U32 stride, HI_FLOAT threshold,std::vector<TargetBox> &boxs)
 	{
 #ifdef DEBUG
-		float timeStart = getTimeMs();
+		float timeStart;
+		float timeEnd;
+		timeStart = getTimeMs();
 #endif
 		HI_S32 ret = NetOneSeg::setBlob(bgr, n, c, h, w, stride, &NetOneSeg::srcBlobs[0].second);
 		SAMPLE_CHECK_RETURN(HI_SUCCESS != ret, ret, "[ERROR]set Blob[%s] failed\n", NetOneSeg::srcBlobs[0].first.c_str());
 
+#ifdef DEBUG
+		timeEnd = getTimeMs();
+		SAMPLE_PRINT("[INFO] == MAT TO BLOB TIME SPEND  : %f ms== \n", timeEnd - timeStart);
+		SAMPLE_PRINT("[INFO] %s-%d-done\n", __FUNCTION__, __LINE__);
+#endif
+
+#ifdef DEBUG
+		timeStart = getTimeMs();
+#endif
 		ret = NetOneSeg::forword();
 		SAMPLE_CHECK_RETURN(HI_SUCCESS != ret, ret, "[ERROR]NNIE forword failed\n");
+#ifdef DEBUG
+		timeEnd = getTimeMs();
+		SAMPLE_PRINT("[INFO] == NNIE FORWORD TIME SPEND  : %f ms== \n", timeEnd - timeStart);
+		SAMPLE_PRINT("[INFO] %s-%d-done\n", __FUNCTION__, __LINE__);
+#endif
 
-		
+#ifdef DEBUG
+		timeStart = getTimeMs();
+#endif	
 		ret = SvpNnieYoloV3GetResult(&(NetOneSeg::NNIEOneSegNetParam), (HI_S32*)data, threshold, boxs);
 		SAMPLE_CHECK_RETURN(HI_SUCCESS != ret, ret, "[ERROR]YoloV3GetResult failed\n");
 
 #ifdef DEBUG
-		float timeEnd = getTimeMs();
-		SAMPLE_PRINT("[INFO] == DETECT TIME SPEND  : %f ms== \n", timeEnd - timeStart);
+		timeEnd = getTimeMs();
+		SAMPLE_PRINT("[INFO] == YOOLV3 GET RESULT TIME SPEND  : %f ms== \n", timeEnd - timeStart);
 		SAMPLE_PRINT("[INFO] %s-%d-done\n", __FUNCTION__, __LINE__);
 #endif
+
 
 	}
 
